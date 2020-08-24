@@ -9,7 +9,7 @@ import { getUserId } from './helpers.js'
 
 dotenv.config()
 
-const { body, validationResult } = validator
+const { body, param, validationResult } = validator
 
 const port = process.env.PORT || 8000
 const baseURL = process.env.CAMUNDA_BASE_URL
@@ -152,6 +152,40 @@ app.post(
 		} catch (error) {
 			res.status(500).json(error)
 		}
+	}
+)
+
+app.post(
+	'/api/profile',
+	[body('email').isEmail().withMessage('Invalid email')],
+	async (req, res) => {
+		const result = validationResult(req)
+
+		if (!result.isEmpty()) res.status(400).send(result)
+
+		const userId = getUserId(req.body.email)
+
+		try {
+			var [taskResponse, userResponse] = await Promise.all([
+				await axios.get(baseURL + `/task?assignee=${userId}`),
+				await axios.get(baseURL + `/user/${userId}/profile`),
+			])
+
+			const { id: taskId } = taskResponse.data[0]
+
+			var variablesResponse = await axios.get(
+				baseURL + `/task/${taskId}/variables`
+			)
+		} catch (error) {
+			res.status(500).json(error)
+		}
+
+		const city = variablesResponse.data.city.value
+		const visa = variablesResponse.data.visa.value
+
+		const { email, firstName, lastName } = userResponse.data
+
+		res.status(200).json({ email, firstName, lastName, city, visa })
 	}
 )
 
