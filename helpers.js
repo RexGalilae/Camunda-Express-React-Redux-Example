@@ -1,4 +1,4 @@
-export const createUserId = (str) => {
+export const getUserId = (str) => {
 	str = str.replace(/^\s+|\s+$/g, '') // trim
 	str = str.toLowerCase()
 

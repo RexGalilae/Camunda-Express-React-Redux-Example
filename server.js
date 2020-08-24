@@ -5,7 +5,7 @@ import cities from './data/cities.js'
 import visas from './data/visaTypes.js'
 import validator from 'express-validator'
 import axios from 'axios'
-import { createUserId } from './helpers.js'
+import { getUserId } from './helpers.js'
 
 dotenv.config()
 
@@ -46,7 +46,7 @@ app.post(
 		const result = validationResult(req)
 
 		const { city, visa, email, firstName, lastName, password } = req.body
-		const userId = createUserId(firstName + lastName)
+		const userId = getUserId(email)
 
 		if (!result.isEmpty()) res.status(400).send(result)
 
@@ -111,7 +111,7 @@ app.post(
 			res.status(500).json(error)
 		}
 
-		res.status(200).json({ userId: email, processInstanceId, taskId })
+		res.status(200).json({ userId, processInstanceId, taskId })
 	}
 )
 
@@ -123,14 +123,35 @@ app.post(
 			.isLength({ min: 8 })
 			.withMessage('Passsword must be atleast 8 characters long'),
 	],
-	(req, res) => {
+	async (req, res) => {
 		const result = validationResult(req)
 
 		if (!result.isEmpty()) res.status(400).send(result)
 
-		// TODO: Make API calls to Camunda here
+		const { email, password } = req.body
 
-		res.status(200).end()
+		const userId = getUserId(email)
+
+		// TODO: Make API calls to Camunda here
+		try {
+			const verifyResponse = await axios.post(baseURL + '/identity/verify', {
+				username: userId,
+				password,
+			})
+
+			if (!verifyResponse.data.authenticated)
+				res.status(400).json({ message: 'User not authenticated' })
+
+			const taskResponse = await axios.get(baseURL + `/task?assignee=${userId}`)
+
+			if (!taskResponse.data || !taskResponse.data.length) res.status(204).end()
+
+			const { id: taskId, taskDefinitionKey } = taskResponse.data[0]
+
+			res.status(200).json({ taskId, taskDefinitionKey })
+		} catch (error) {
+			res.status(500).json(error)
+		}
 	}
 )
 
