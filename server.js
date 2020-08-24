@@ -18,14 +18,17 @@ const app = express()
 app.use(cors())
 app.use(express.json())
 
+// GET /api/cities
 app.get('/api/cities', (req, res) => {
 	res.status(200).json(cities)
 })
 
+// GET /api/visas
 app.get('/api/visas', (req, res) => {
 	res.status(200).json(visas)
 })
 
+// POST /api/signup
 app.post(
 	'/api/signup',
 	[
@@ -115,6 +118,7 @@ app.post(
 	}
 )
 
+// POST /api/login
 app.post(
 	'/api/login',
 	[
@@ -155,6 +159,7 @@ app.post(
 	}
 )
 
+// POST /api/profile
 app.post(
 	'/api/profile',
 	[body('email').isEmail().withMessage('Invalid email')],
@@ -176,6 +181,55 @@ app.post(
 			var variablesResponse = await axios.get(
 				baseURL + `/task/${taskId}/variables`
 			)
+		} catch (error) {
+			res.status(500).json(error)
+		}
+
+		const city = variablesResponse.data.city.value
+		const visa = variablesResponse.data.visa.value
+
+		const { email, firstName, lastName } = userResponse.data
+
+		res.status(200).json({ email, firstName, lastName, city, visa })
+	}
+)
+
+// POST /api/upload
+app.post(
+	'/api/upload',
+	[body('email').isEmail().withMessage('Invalid email')],
+	async (req, res) => {
+		const result = validationResult(req)
+
+		if (!result.isEmpty()) res.status(400).send(result)
+
+		const variableRequest = {
+			variables: {
+				eidUploaded: {
+					value: true,
+				},
+				passportUploaded: {
+					value: true,
+				},
+			},
+		}
+
+		const userId = getUserId(req.body.email)
+
+		try {
+			const taskResponse = await axios.get(baseURL + `/task?assignee=${userId}`)
+
+			const { id: taskId, taskDefinitionKey } = taskResponse.data[0]
+
+			if (taskDefinitionKey !== 'UploadFiles')
+				res.status(400).json({
+					error:
+						"User can't Upload Files if the current task isn't 'Upload Files'",
+				})
+
+			await axios.post(baseURL + `/task/${taskId}/complete`, variableRequest)
+
+			res.status(200).end()
 		} catch (error) {
 			res.status(500).json(error)
 		}
