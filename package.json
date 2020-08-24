@@ -5,12 +5,15 @@
 	"description": "A PoC two-page form using the Camunda, Express, React and Node.js stack",
 	"main": "server.js",
 	"scripts": {
-		"server": "nodemon server.js"
+		"server": "nodemon server.js",
+		"client": "npm run start --prefix client",
+		"dev": "concurrently \"npm run server\" \"npm run client\""
 	},
 	"author": "",
 	"license": "MIT",
 	"dependencies": {
 		"axios": "^0.20.0",
+		"concurrently": "^5.3.0",
 		"cors": "^2.8.5",
 		"dotenv": "^8.2.0",
 		"express": "^4.17.1",
