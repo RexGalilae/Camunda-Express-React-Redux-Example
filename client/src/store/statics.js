@@ -33,7 +33,12 @@ const { actions, reducer } = createSlice({
 
 export default reducer
 
-const { citiesReceived, visasReceived } = actions
+const {
+	citiesReceived,
+	visasReceived,
+	dataRequestFailed,
+	dataRequested,
+} = actions
 
 export const loadCities = () => (dispatch, getState) => {
 	const { lastFetch } = getState().statics
@@ -44,7 +49,9 @@ export const loadCities = () => (dispatch, getState) => {
 	return dispatch(
 		apiCallBegan({
 			url: 'cities',
+			onStart: dataRequested.type,
 			onSuccess: citiesReceived.type,
+			onError: dataRequestFailed.type,
 		})
 	)
 }
@@ -58,7 +65,9 @@ export const loadVisas = () => (dispatch, getState) => {
 	return dispatch(
 		apiCallBegan({
 			url: 'visas',
+			onStart: dataRequested.type,
 			onSuccess: visasReceived.type,
+			onError: dataRequestFailed.type,
 		})
 	)
 }
