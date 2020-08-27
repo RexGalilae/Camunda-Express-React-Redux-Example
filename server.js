@@ -187,10 +187,21 @@ app.post(
 
 		const city = variablesResponse.data.city.value
 		const visa = variablesResponse.data.visa.value
+		const uploadedEid = variablesResponse.data.eidUploaded.value || false
+		const uploadedPassport =
+			variablesResponse.data.passportUploaded.value || false
 
 		const { email, firstName, lastName } = userResponse.data
 
-		res.status(200).json({ email, firstName, lastName, city, visa })
+		res.status(200).json({
+			email,
+			firstName,
+			lastName,
+			city,
+			visa,
+			uploadedEid,
+			uploadedPassport,
+		})
 	}
 )
 
