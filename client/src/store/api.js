@@ -1,5 +1,4 @@
-import pkg from '@reduxjs/toolkit'
-const { createAction } = pkg
+import { createAction } from '@reduxjs/toolkit'
 
 export const apiCallBegan = createAction('api/callBegan')
 export const apiCallSuccess = createAction('api/callSuccess')

@@ -1,5 +1,5 @@
-import pkg from '@reduxjs/toolkit'
-const { createSlice } = pkg
+import { createSlice } from '@reduxjs/toolkit'
+import { apiCallBegan } from './api'
 
 const { actions, reducer } = createSlice({
 	name: 'user',
@@ -32,7 +32,7 @@ const { actions, reducer } = createSlice({
 
 export default reducer
 
-export const {
+const {
 	dataReceieved,
 	dataRequested,
 	dataRequestFailed,
