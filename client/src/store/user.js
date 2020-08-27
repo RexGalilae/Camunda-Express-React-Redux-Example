@@ -40,11 +40,11 @@ const {
 	userUploadedFiles,
 } = actions
 
-export const createAccount = (user) => {
+export const createAccount = () => (dispatch, getState) => {
 	apiCallBegan({
 		url: 'signup',
 		method: 'post',
-		data: user,
+		data: getState().user,
 		onStart: dataRequested.type,
 		onSuccess: userCreated.type,
 		onError: dataRequestFailed.type,

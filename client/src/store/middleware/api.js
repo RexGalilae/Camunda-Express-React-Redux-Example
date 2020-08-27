@@ -18,7 +18,7 @@ const api = ({ dispatch }) => (next) => async (action) => {
 			data,
 		})
 
-		dispatch(actions.apiCallSuccess(res.data))
+		dispatch(actions.apiCallSuccess({ ...data, ...res.data }))
 
 		if (onSuccess) dispatch({ type: onSuccess, payload: res.data })
 	} catch (error) {
