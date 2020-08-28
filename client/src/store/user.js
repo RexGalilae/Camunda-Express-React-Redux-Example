@@ -3,7 +3,13 @@ import { apiCallBegan } from './api'
 
 const { actions, reducer } = createSlice({
 	name: 'user',
-	initialState: { data: {}, loading: false, lastFetch: null },
+	initialState: {
+		data: {},
+		loading: false,
+		lastFetch: null,
+		isLoggedIn: false,
+		authenticationFailed: false,
+	},
 	reducers: {
 		dataRequested: (state, action) => {
 			state.loading = true
@@ -11,13 +17,14 @@ const { actions, reducer } = createSlice({
 
 		dataRequestFailed: (state, action) => {
 			state.loading = false
+			console.log(action.payload)
 		},
 
-		dataReceieved: (state, action) => {
-			state.data = action.payload
-			state.loading = false
-			state.lastFetch = Date.now()
-		},
+		// dataReceieved: (state, action) => {
+		// 	state.data = action.payload
+		// 	state.loading = false
+		// 	state.lastFetch = Date.now()
+		// },
 
 		userCreated: (state, action) => {
 			state.data = action.payload
@@ -26,6 +33,23 @@ const { actions, reducer } = createSlice({
 		userUploadedFiles: (state, action) => {
 			state.data.passportUploaded = true
 			state.data.eidUploaded = true
+		},
+
+		userLoggedIn: (state, action) => {
+			state.loading = false
+			state.data = action.payload
+			state.isLoggedIn = true
+			state.authenticationFailed = false
+		},
+
+		authenticationFailed: (state, action) => {
+			state.loading = false
+			state.authenticationFailed = true
+		},
+
+		userLoggedOut: (state, action) => {
+			state.data = {}
+			state.isLoggedIn = false
 		},
 	},
 })
@@ -38,15 +62,41 @@ const {
 	dataRequestFailed,
 	userCreated,
 	userUploadedFiles,
+	userLoggedIn,
+	authenticationFailed,
+	userLoggedOut,
 } = actions
 
-export const createAccount = () => (dispatch, getState) => {
+export const createAccount = (user) =>
 	apiCallBegan({
 		url: 'signup',
 		method: 'post',
-		data: getState().user,
+		data: user,
 		onStart: dataRequested.type,
 		onSuccess: userCreated.type,
 		onError: dataRequestFailed.type,
 	})
-}
+
+export const logUserIn = (user) =>
+	apiCallBegan({
+		url: 'login',
+		method: 'post',
+		data: user,
+		onStart: dataRequested.type,
+		onSuccess: userLoggedIn.type,
+		onError: authenticationFailed.type,
+	})
+
+export const uploadUserFiles = () => (dispatch, getState) =>
+	dispatch(
+		apiCallBegan({
+			url: 'upload',
+			method: 'post',
+			data: { email: getState().user.data.email },
+			onStart: dataRequested.type,
+			onSuccess: userUploadedFiles.type,
+			onError: dataRequestFailed.type,
+		})
+	)
+
+export const logUserOut = () => userLoggedOut()

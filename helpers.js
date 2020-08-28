@@ -11,7 +11,7 @@ export const getUserId = (str) => {
 
 	str = str
 		.replace(/[^a-z0-9 -]/g, '') // remove invalid chars
-		.replace(/\s+/g, '') // collapse whitespace and replace by -
+		.replace(/\s+/g, '') // collapse whitespace
 		.replace(/-+/g, '') // collapse dashes
 
 	return str

@@ -6,6 +6,8 @@ import { createAccount } from '../store/user.js'
 
 import formValidate from '../helpers/formValidator.js'
 
+import { Link } from 'react-router-dom'
+
 import {
 	Button,
 	Container,
@@ -83,16 +85,23 @@ export class Signup extends Component {
 		Object.keys(this.state.errors).length === 0 &&
 		this.state.errors.constructor === Object
 
+	handleFormSubmit = async (e) => {
+		e.preventDefault()
+
+		try {
+			await this.props.createAccount(this.state.formData)
+		} catch (error) {
+			console.log(error)
+		}
+
+		this.props.history.push('/login')
+	}
+
 	render() {
 		return (
 			<div>
 				<Container>
-					<Grid
-						textAlign="center"
-						style={{ height: '100vh' }}
-						verticalAlign="middle"
-						padded
-					>
+					<Grid textAlign="center" style={{ height: '100vh' }} padded>
 						<Grid.Column style={{ maxWidth: 450 }}>
 							<Header as="h2" color="teal" textAlign="center">
 								Sign-Up
@@ -207,13 +216,14 @@ export class Signup extends Component {
 										fluid
 										size="large"
 										disabled={!this.isFormReadyToSubmit()}
+										onClick={(e) => this.handleFormSubmit(e)}
 									>
 										Login
 									</Button>
 								</Segment>
 							</Form>
 							<Message>
-								Already Regsitered? <a href="/">Sign In</a>
+								Already Regsitered? <Link to="/login">Sign In</Link>
 							</Message>
 						</Grid.Column>
 					</Grid>
@@ -230,7 +240,7 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = (dispatch) => ({
 	loadCities: () => dispatch(loadCities()),
 	loadVisas: () => dispatch(loadVisas()),
-	createAccount: () => dispatch(createAccount()),
+	createAccount: (user) => dispatch(createAccount(user)),
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(Signup)

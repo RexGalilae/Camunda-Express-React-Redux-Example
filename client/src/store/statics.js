@@ -42,9 +42,9 @@ const {
 
 export const loadCities = () => (dispatch, getState) => {
 	const { lastFetch } = getState().statics
-	const diffInMinutes = moment().diff(moment(lastFetch), 'days')
+	const diffInMinutes = moment().diff(moment(lastFetch), 'minutes')
 
-	if (diffInMinutes < 10) return
+	if (diffInMinutes < 60) return
 
 	return dispatch(
 		apiCallBegan({
@@ -58,9 +58,9 @@ export const loadCities = () => (dispatch, getState) => {
 
 export const loadVisas = () => (dispatch, getState) => {
 	const { lastFetch } = getState().statics
-	const diffInMinutes = moment().diff(moment(lastFetch), 'days')
+	const diffInMinutes = moment().diff(moment(lastFetch), 'minutes')
 
-	if (diffInMinutes < 10) return
+	if (diffInMinutes < 60) return
 
 	return dispatch(
 		apiCallBegan({

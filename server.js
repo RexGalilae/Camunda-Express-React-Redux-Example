@@ -9,7 +9,7 @@ import { getUserId } from './helpers.js'
 
 dotenv.config()
 
-const { body, param, validationResult } = validator
+const { body, validationResult } = validator
 
 const port = process.env.PORT || 8000
 const baseURL = process.env.CAMUNDA_BASE_URL
@@ -79,6 +79,7 @@ app.post(
 		}
 
 		try {
+			// Start new Prcoess
 			const processResponse = await axios.post(
 				baseURL +
 					'/process-definition/key/TwoPageForm/tenant-id/TwoFormDiagram/start',
@@ -87,26 +88,32 @@ app.post(
 
 			var processInstanceId = processResponse.data.id
 
+			// Create a new User
 			await axios.post(baseURL + '/user/create', userRequest)
 
+			// Fetch the latest pending task from the new process
 			const taskResponse = await axios.get(
 				baseURL + `/task?processInstanceId=${processInstanceId}`
 			)
 
 			var taskId = taskResponse.data[0].id
 
+			// Assign the task to the user (auditing reasons)
 			await axios.post(baseURL + `/task/${taskId}/assignee`, {
 				userId,
 			})
 
+			// Mark the first task as complete
 			await axios.post(baseURL + `/task/${taskId}/complete`, {})
 
+			// Fetch the next task
 			const newProcessResponse = await axios.get(
 				baseURL + `/task?processInstanceId=${processInstanceId}`
 			)
 
 			var newTaskId = newProcessResponse.data[0].id
 
+			// Assign it tp the user
 			await axios.post(baseURL + `/task/${newTaskId}/assignee`, {
 				userId,
 			})
@@ -114,7 +121,8 @@ app.post(
 			res.status(500).json(error)
 		}
 
-		res.status(200).json({ userId, processInstanceId, taskId })
+		// Returns the users ID, the process Instance ID and the new task's ID
+		res.status(200).json({ userId, processInstanceId, newTaskId })
 	}
 )
 
@@ -138,21 +146,26 @@ app.post(
 
 		// TODO: Make API calls to Camunda here
 		try {
+			// Verify users credentials
 			const verifyResponse = await axios.post(baseURL + '/identity/verify', {
 				username: userId,
 				password,
 			})
 
+			// Send a 400 response if user is not authenticated 😤
 			if (!verifyResponse.data.authenticated)
 				res.status(400).json({ message: 'User not authenticated' })
 
+			// Look for tasks assigned to user
 			const taskResponse = await axios.get(baseURL + `/task?assignee=${userId}`)
 
+			// Return empty response if no tasks are pending
 			if (!taskResponse.data || !taskResponse.data.length) res.status(204).end()
 
 			const { id: taskId, taskDefinitionKey } = taskResponse.data[0]
 
-			res.status(200).json({ taskId, taskDefinitionKey })
+			// return the latest pending task id and definition key
+			res.status(200).json({ email, taskId, taskDefinitionKey })
 		} catch (error) {
 			res.status(500).json(error)
 		}
@@ -230,7 +243,11 @@ app.post(
 		try {
 			const taskResponse = await axios.get(baseURL + `/task?assignee=${userId}`)
 
-			const { id: taskId, taskDefinitionKey } = taskResponse.data[0]
+			const {
+				id: taskId,
+				taskDefinitionKey,
+				processInstanceId,
+			} = taskResponse.data[0]
 
 			if (taskDefinitionKey !== 'UploadFiles')
 				res.status(400).json({
@@ -239,6 +256,18 @@ app.post(
 				})
 
 			await axios.post(baseURL + `/task/${taskId}/complete`, variableRequest)
+
+			// Fetch the next task
+			const newProcessResponse = await axios.get(
+				baseURL + `/task?processInstanceId=${processInstanceId}`
+			)
+
+			var newTaskId = newProcessResponse.data[0].id
+
+			// Assign it tp the user
+			await axios.post(baseURL + `/task/${newTaskId}/assignee`, {
+				userId,
+			})
 
 			res.status(200).end()
 		} catch (error) {
