@@ -23,9 +23,35 @@ app.get('/api/cities', (req, res) => {
 	res.status(200).json(cities)
 })
 
+// GET /api/cities/:id
+app.get('/api/cities/:id', (req, res) => {
+	const foundCity = cities.filter((city) => city._id === req.params.id)[0]
+
+	if (!foundCity) {
+		res.status(404).json({
+			message: 'No city with the given id was found :/',
+		})
+	}
+
+	res.status(200).json(foundCity)
+})
+
 // GET /api/visas
 app.get('/api/visas', (req, res) => {
 	res.status(200).json(visas)
+})
+
+// GET /api/visas/:id
+app.get('/api/visas/:id', (req, res) => {
+	const foundVisa = visas.filter((visa) => visa._id === req.params.id)[0]
+
+	if (!foundVisa) {
+		res.status(404).json({
+			message: 'No visa type with the given id was found :/',
+		})
+	}
+
+	res.status(200).json(foundVisa)
 })
 
 // POST /api/signup
@@ -160,7 +186,8 @@ app.post(
 			const taskResponse = await axios.get(baseURL + `/task?assignee=${userId}`)
 
 			// Return empty response if no tasks are pending
-			if (!taskResponse.data || !taskResponse.data.length) res.status(204).end()
+			if (!taskResponse.data || !taskResponse.data.length)
+				res.status(200).json({ email })
 
 			const { id: taskId, taskDefinitionKey } = taskResponse.data[0]
 
@@ -189,20 +216,27 @@ app.post(
 				await axios.get(baseURL + `/user/${userId}/profile`),
 			])
 
+			if (!taskResponse.data[0])
+				res.status(404).json({ message: 'This user has no pending tasks' })
+
 			const { id: taskId } = taskResponse.data[0]
 
+			// res.send(baseURL + `/task/${taskId}/variables`)
 			var variablesResponse = await axios.get(
 				baseURL + `/task/${taskId}/variables`
 			)
 		} catch (error) {
+			console.log({ error })
 			res.status(500).json(error)
 		}
-
 		const city = variablesResponse.data.city.value
 		const visa = variablesResponse.data.visa.value
-		const uploadedEid = variablesResponse.data.eidUploaded.value || false
-		const uploadedPassport =
-			variablesResponse.data.passportUploaded.value || false
+
+		const { value: uploadedEid } = variablesResponse.data.eidUploaded || {
+			value: false,
+		}
+		const { value: uploadedPassport } = variablesResponse.data
+			.passportUploaded || { value: false }
 
 		const { email, firstName, lastName } = userResponse.data
 
@@ -264,13 +298,14 @@ app.post(
 
 			var newTaskId = newProcessResponse.data[0].id
 
-			// Assign it tp the user
+			// Assign it to the user
 			await axios.post(baseURL + `/task/${newTaskId}/assignee`, {
 				userId,
 			})
 
 			res.status(200).end()
 		} catch (error) {
+			console.log(error)
 			res.status(500).json(error)
 		}
 
