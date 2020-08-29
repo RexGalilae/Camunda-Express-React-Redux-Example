@@ -1,4 +1,6 @@
 export const getUserId = (str) => {
+	if (!str) return
+
 	str = str.replace(/^\s+|\s+$/g, '') // trim
 	str = str.toLowerCase()
 

@@ -40,7 +40,7 @@ const {
 	dataRequested,
 } = actions
 
-export const loadCities = () => (dispatch, getState) => {
+export const loadCities = (id = '') => (dispatch, getState) => {
 	const { lastFetch } = getState().statics
 	const diffInMinutes = moment().diff(moment(lastFetch), 'minutes')
 
@@ -48,7 +48,7 @@ export const loadCities = () => (dispatch, getState) => {
 
 	return dispatch(
 		apiCallBegan({
-			url: 'cities',
+			url: 'cities/' + id,
 			onStart: dataRequested.type,
 			onSuccess: citiesReceived.type,
 			onError: dataRequestFailed.type,
@@ -56,7 +56,7 @@ export const loadCities = () => (dispatch, getState) => {
 	)
 }
 
-export const loadVisas = () => (dispatch, getState) => {
+export const loadVisas = (id = '') => (dispatch, getState) => {
 	const { lastFetch } = getState().statics
 	const diffInMinutes = moment().diff(moment(lastFetch), 'minutes')
 
@@ -64,7 +64,7 @@ export const loadVisas = () => (dispatch, getState) => {
 
 	return dispatch(
 		apiCallBegan({
-			url: 'visas',
+			url: 'visas/' + id,
 			onStart: dataRequested.type,
 			onSuccess: visasReceived.type,
 			onError: dataRequestFailed.type,

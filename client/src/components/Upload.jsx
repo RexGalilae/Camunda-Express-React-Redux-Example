@@ -39,7 +39,7 @@ export class Upload extends Component {
 			console.log(error)
 		}
 
-		this.props.documentsUploaded && this.props.history.push('/review')
+		this.props.history.push('/review')
 	}
 
 	render() {

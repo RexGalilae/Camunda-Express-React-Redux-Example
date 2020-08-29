@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 
-import { Button, Menu, Container } from 'semantic-ui-react'
+import { Button, Menu, Container, Icon } from 'semantic-ui-react'
 import { logUserOut } from '../store/user'
 import { Link } from 'react-router-dom'
 
@@ -12,9 +12,16 @@ export class NavBar extends Component {
 				<Container text>
 					<Menu.Item position="right">
 						{this.props.isUserLoggedIn ? (
-							<Button primary onClick={this.props.logOut}>
-								Log Out
-							</Button>
+							<div>
+								<Link to="/review">
+									<Button style={{ marginRight: 20 }}>
+										<Icon name="user circle"></Icon> Profile
+									</Button>
+								</Link>
+								<Button primary onClick={this.props.logOut}>
+									Log Out
+								</Button>
+							</div>
 						) : (
 							<>
 								<Link to="/login">

@@ -16,7 +16,6 @@ import {
 	Segment,
 	Header,
 	Message,
-	Dropdown,
 	Divider,
 } from 'semantic-ui-react'
 

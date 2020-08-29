@@ -20,11 +20,11 @@ const { actions, reducer } = createSlice({
 			console.log(action.payload)
 		},
 
-		// dataReceieved: (state, action) => {
-		// 	state.data = action.payload
-		// 	state.loading = false
-		// 	state.lastFetch = Date.now()
-		// },
+		dataReceieved: (state, action) => {
+			state.data = action.payload
+			state.loading = false
+			state.lastFetch = Date.now()
+		},
 
 		userCreated: (state, action) => {
 			state.data = action.payload
@@ -98,5 +98,19 @@ export const uploadUserFiles = () => (dispatch, getState) =>
 			onError: dataRequestFailed.type,
 		})
 	)
+
+export const getUserDeets = () => (dispatch, getState) =>
+	!getState().user.data.email
+		? null
+		: dispatch(
+				apiCallBegan({
+					url: 'profile',
+					method: 'post',
+					data: { email: getState().user.data.email },
+					onStart: dataRequested.type,
+					onSuccess: dataReceieved.type,
+					onError: dataRequestFailed.type,
+				})
+		  )
 
 export const logUserOut = () => userLoggedOut()
